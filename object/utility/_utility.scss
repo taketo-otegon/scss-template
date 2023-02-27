@@ -1,0 +1,56 @@
+@use "../../global" as *;
+
+// スクリーンリーダー用
+.u-sr-only {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+// 改行
+.u-br {
+  &::before {
+    content: "\A";
+    white-space: pre;
+  }
+}
+
+// mdまで改行
+.u-sp-br {
+  @include mq(md, max) {
+    &::before {
+      content: "\A";
+      white-space: pre;
+    }
+  }
+}
+// lgまで改行
+.u-br-lg {
+  @include mq(lg, max) {
+    &::before {
+      content: "\A";
+      white-space: pre;
+    }
+  }
+}
+// xlから改行
+.u-br-xl-rv {
+  @include mq(xl, min) {
+    &::before {
+      content: "\A";
+      white-space: pre;
+    }
+  }
+}
+
+// pcのみ表示
+.u-only-pc {
+  @include mq(md, max) {
+    display: none;
+  }
+}

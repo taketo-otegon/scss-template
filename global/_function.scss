@@ -1,0 +1,53 @@
+@use "sass:math";
+@use "sass:map";
+
+//-----初期設定----//
+$unit: 1px; //使用する単位の設定(px or rem)
+$baseSize: 10px; //remを使うためのbasesize
+
+$unitSize: (
+  1px: 1,
+  1rem: stripUnit($baseSize),
+);
+
+@function stripUnit($num) {
+  //単位を取り除く
+  @return math.div($num, ($num * 0 + 1));
+}
+
+@function divideForUnit($px) {
+  //必要な単位値に変換する
+  @return math.div(stripUnit($px), map.get($unitSize, $unit));
+}
+
+// 線形的に値を変換する
+@function fluidSize(
+  $maxFontSize,
+  $minFontSize,
+  $maxBreakpointVal,
+  $minBreakpointVal
+) {
+  //---最大値と最小値の設定----//
+  $minUnit: $minFontSize * $unit; //最小のsizeを取ってくる
+  $maxUnit: $maxFontSize * $unit; //最大のsizeを取ってくる
+
+  //------まずは２点の単位を全て単位に即した値に変換------//
+  $minNum: divideForUnit($minFontSize);
+  $maxNum: divideForUnit($maxFontSize);
+  $minBreakpoint: divideForUnit($minBreakpointVal);
+  $maxBreakpoint: divideForUnit($maxBreakpointVal);
+
+  //-----------横軸が画面幅、縦軸がその時のsizeである一次関数と見立てて、y=ax+bのa,bを求める。------------------------//
+  $slope: math.div(
+    ($maxNum - $minNum),
+    ($maxBreakpoint - $minBreakpoint)
+  ); //傾きの値を取得する(remの値)
+  $calc__b: ($minBreakpoint * -1 * $slope + $minNum) * $unit; //bの値を取得
+  //remの値で傾きが求まっている。ここからこれをvwに変換すればもとまるが、その変換方法が以下のように簡単に行える。
+  //画面の横幅をxととる。まずは100vwの時のsizeをyの値にとる。
+  //次に50vwの時のsizeをyの値にとるとわかるが、これはxに対しての倍率になっていることがわかる。
+  //つまり、xを何倍すればこの値になるか？なので、これは一次関数における傾きと同じ。
+  //一次関数でいうところのaの値は分数表記での倍率なので、それを％換算してやることでvwと同じ値となる。
+  $calc__vw: ($slope * 100) * 1vw;
+  @return clamp($minUnit, $calc__b + $calc__vw, $maxUnit);
+}
